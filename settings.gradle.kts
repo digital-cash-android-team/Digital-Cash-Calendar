@@ -1,3 +1,5 @@
+import java.net.URI
+
 pluginManagement {
     repositories {
         google {
@@ -9,8 +11,11 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        maven("https://repository.apache.org/content/repositories/snapshots/")
+        maven("https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-shade-plugin")
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
