@@ -11,8 +11,8 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
-//        maven("https://repository.apache.org/content/repositories/snapshots/")
-//        maven("https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-shade-plugin")
+        maven("https://repository.apache.org/content/repositories/snapshots/")
+        maven("https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-shade-plugin")
     }
 }
 
