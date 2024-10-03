@@ -54,7 +54,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.digital-cash-android-team"
                 artifactId = "calendar"
-                version = "1.0"
+                version = "1.1"
             }
         }
     }

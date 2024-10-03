@@ -1,12 +1,23 @@
 package com.digitalcash.split.ui.main.calendar.ui
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import com.digitalcash.calendar.ui.CalendarDialog
+import com.digitalcash.calendar.ui.WheelMonthYearPicker
+import com.digitalcash.calendar.ui.noRippleEffect
 import com.digitalcash.calendar.utils.CalendarDateType
 import com.digitalcash.calendar.utils.CalendarDialogColorConfig
 import com.digitalcash.calendar.utils.CalendarDialogDimensionConfig
@@ -176,6 +187,45 @@ fun DgCalendar(
                 language = "ar",
                 calendarState = calendarState,
             )
+        }
+
+        CalendarViewType.PICKER -> {
+            var showBottomSheet by remember {
+                mutableStateOf(true)
+            }
+            WheelMonthYearPicker(
+                modifier = Modifier,
+                maxDayOfMonth = maxDate.get(Calendar.DAY_OF_MONTH),
+                maxMonth = maxDate.get(Calendar.MONTH),
+                maxYear = maxDate.get(Calendar.YEAR),
+                selectedYear = selectedYear,
+                selectedDay = selectedDay,
+                selectedMonth = selectedMonth,
+                language = "ar",
+                calendarState = calendarState,
+                onDismiss = onDismissRequest,
+                showBottomSheet = showBottomSheet,
+                size = DpSize(256.dp, 250.dp)
+            ) { date ->
+                Box(Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "title",
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                    Text(
+                        text = "doneLabel",
+                        modifier = Modifier
+                            .padding(end = 12.dp)
+                            .align(Alignment.CenterEnd)
+                            .noRippleEffect {
+//                                scope.launch { modalBottomSheetState.bottomSheetState.partialExpand() }
+//                                isModalSheetVisible = false
+                                showBottomSheet = false
+                                println("selecred dasd $date")
+                            }
+                    )
+                }
+            }
         }
     }
 }

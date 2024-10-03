@@ -6,5 +6,6 @@ enum class CalendarDateType {
 
 enum class CalendarViewType {
     Dialog,
-    DropDown
+    DropDown,
+    PICKER
 }
