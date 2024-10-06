@@ -8,6 +8,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.digitalcash.calendar.R
 import com.github.msarhan.ummalqura.calendar.UmmalquraCalendar
+import java.time.YearMonth
 import java.util.Calendar
 import java.util.Locale
 
@@ -83,6 +84,14 @@ object CalenderUtils {
         } else {
             (1..daysInMonth).toList()
         }
+    }
+
+    fun getValidDayInMonth(month: Int, year: Int, selectedDay: Int): Int {
+        val yearMonth = YearMonth.of(year, month) // Handles leap years and month boundaries
+        val daysInMonth = yearMonth.lengthOfMonth()
+
+        // Return the minimum of the selected day and the number of days in the month
+        return selectedDay.coerceAtMost(daysInMonth)
     }
 
     /**

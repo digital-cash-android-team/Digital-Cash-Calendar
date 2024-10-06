@@ -11,22 +11,26 @@ import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.calculateTargetValue
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -51,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -68,6 +73,7 @@ import com.digitalcash.calendar.utils.CalenderUtils.getAvailableMonths
 import com.digitalcash.calendar.utils.CalenderUtils.getAvailableYears
 import com.digitalcash.calendar.utils.CalenderUtils.getDaysInMonth
 import kotlinx.coroutines.launch
+import java.time.DateTimeException
 import java.time.LocalDate
 import kotlin.math.abs
 import kotlin.math.absoluteValue
@@ -84,7 +90,7 @@ fun WheelMonthYearPicker(
     titleStyle: TextStyle = LocalTextStyle.current,
     doneLabelStyle: TextStyle = LocalTextStyle.current,
     size: DpSize = DpSize(256.dp, 128.dp),
-    rowCount: Int = 3,
+    rowCount: Int = 7,
     textStyle: TextStyle = MaterialTheme.typography.titleMedium,
     textColor: Color = LocalContentColor.current,
     selectorProperties: SelectorProperties = WheelPickerDefaults.selectorProperties(),
@@ -98,7 +104,7 @@ fun WheelMonthYearPicker(
     calendarState: CalendarState,
     onDismiss: () -> Unit,
     showBottomSheet: Boolean = true,
-    header : @Composable (d: LocalDate)->Unit
+    header: @Composable (d: LocalDate) -> Unit
 
 ) {
 
@@ -112,7 +118,7 @@ fun WheelMonthYearPicker(
         scope.launch { modalBottomSheetState.bottomSheetState.expand() }
     }
 
-    if(showBottomSheet) {
+    if (showBottomSheet) {
         BottomSheetScaffold(
             scaffoldState = modalBottomSheetState,
             sheetSwipeEnabled = false,
@@ -126,11 +132,8 @@ fun WheelMonthYearPicker(
                         thickness = (0.5).dp,
                         color = Color.LightGray
                     )
-                    CustomMonthYearPicker(
-                        textColor = textColor,
-                        selectorProperties = selectorProperties,
-                        rowCount = rowCount,
-                        size = size,
+                    DefaultWheelMonthYearPicker(
+                        modifier = modifier,
                         maxYear = maxYear,
                         maxMonth = maxMonth,
                         maxDayOfMonth = maxDayOfMonth,
@@ -139,10 +142,15 @@ fun WheelMonthYearPicker(
                         selectedDay = selectedDay,
                         language = language,
                         calendarState = calendarState,
+                        size = size,
+                        rowCount = rowCount,
                         textStyle = textStyle,
-                        modifier = Modifier.padding(top = 12.dp, bottom = 50.dp)
-                    ) { day, month, year ->
-                        selectedDate = LocalDate.of(year, month, day)
+                        textColor = textColor,
+                        selectorProperties = selectorProperties,
+                    ){ day, month, year ->
+                        try{ selectedDate = LocalDate.of(year, month, day) }catch (e: DateTimeException){
+                            println(e.toString())
+                        }
                     }
                 }
             }
@@ -150,46 +158,6 @@ fun WheelMonthYearPicker(
 
         }
     }
-}
-
-@Composable
-fun CustomMonthYearPicker(
-    modifier: Modifier = Modifier,
-
-    maxDayOfMonth: Int,
-    maxMonth: Int,
-    maxYear: Int,
-    selectedYear: Int,
-    selectedDay: Int,
-    selectedMonth: Int,
-    language: String = "ar",
-    calendarState: CalendarState,
-    size: DpSize = DpSize(256.dp, 128.dp),
-    rowCount: Int = 3,
-    textStyle: TextStyle = MaterialTheme.typography.titleMedium,
-    textColor: Color = LocalContentColor.current,
-    selectorProperties: SelectorProperties = WheelPickerDefaults.selectorProperties(),
-    onSnappedDate: (Int, Int, Int) -> Unit
-) {
-    DefaultWheelMonthYearPicker(
-        modifier = modifier,
-        maxYear = maxYear,
-        maxMonth = maxMonth,
-        maxDayOfMonth = maxDayOfMonth,
-        selectedYear = selectedYear,
-        selectedMonth = selectedMonth,
-        selectedDay = selectedDay,
-        language = language,
-        calendarState = calendarState,
-        size = size,
-        rowCount = rowCount,
-        textStyle = textStyle,
-        textColor = textColor,
-        selectorProperties = selectorProperties,
-        onSnappedDate = { day, month, year ->
-            onSnappedDate(year, month, day)
-        }
-    )
 }
 
 @Composable
@@ -211,18 +179,9 @@ internal fun DefaultWheelMonthYearPicker(
     onSnappedDate: (Int, Int, Int) -> Unit
 ) {
 
-    var selectedYear1 by remember {
-        mutableIntStateOf(selectedYear)
-    }
-
-    var selectedMonth1 by remember {
-        mutableIntStateOf(selectedMonth)
-    }
-
-    var selectedDay1 by remember {
-        mutableIntStateOf(selectedDay)
-    }
-
+    var selectedYear1 by remember { mutableIntStateOf(selectedYear) }
+    var selectedMonth1 by remember { mutableIntStateOf(selectedMonth) }
+    var selectedDay1 by remember { mutableIntStateOf(selectedDay) }
 
     val daysInMonth: List<Int> =
         if (selectedYear1 == maxYear && selectedMonth1 >= maxMonth) {
@@ -230,19 +189,18 @@ internal fun DefaultWheelMonthYearPicker(
                 selectedYear = selectedYear1,
                 selectedMonth = selectedMonth1,
                 currentDay = maxDayOfMonth,
-                currentMonth = maxMonth,
+                currentMonth = maxMonth + 1,
                 currentYear = maxYear,
                 disableFutureDates = calendarState.disableFutureDates,
                 calendarDateType = calendarState.calendarDateType,
             )
         } else {
             (1..getDaysInMonth(
-                selectedMonth1,
+                selectedMonth1 - 1,
                 selectedYear1,
                 calendarType = calendarState.calendarDateType,
             )).toList()
         }
-    println("days $daysInMonth")
 
     val availableMonths = getAvailableMonths(
         currentMonth = maxMonth,
@@ -253,10 +211,7 @@ internal fun DefaultWheelMonthYearPicker(
         range = calendarState.range,
     )
 
-    val availableYears = getAvailableYears(
-        yearsRange = calendarState.range,
-    )
-
+    val availableYears = getAvailableYears(yearsRange = calendarState.range)
 
     var snappedDay by remember { mutableIntStateOf(selectedDay1) }
     var snappedYear by remember { mutableIntStateOf(selectedYear1) }
@@ -264,139 +219,102 @@ internal fun DefaultWheelMonthYearPicker(
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         if (selectorProperties.enabled().value) {
-            HorizontalDivider(
-                modifier = Modifier.padding(bottom = (size.height / (rowCount))),
-                thickness = (0.5).dp,
-                color = selectorProperties.borderColor().value
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(top = (size.height / (rowCount))),
-                thickness = (0.5).dp,
-                color = selectorProperties.borderColor().value
-            )
-        }
-        Row {
-            Spacer(modifier = Modifier.weight(1f))
 
-            daysInMonth?.let { days ->
-                WheelTextPicker(
-                    modifier = Modifier.weight(1f),
-                    startIndex = days.find { it == selectedDay1 } ?: 0,
-                    size = DpSize(
-                        width = size.width / 3,
-                        height = size.height
-                    ),
-                    texts = days.map { it.toString() },
+
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 60.dp)
+                    .clip(
+                        RoundedCornerShape(8.0.dp)
+                    )
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .background(Color(0xFFE4E4E9))
+
+
+            ) {
+
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+
+                WheelPicker(
+                    modifier = Modifier.wrapContentWidth(),
+                    startIndex = daysInMonth.find { it == selectedDay1 } ?: 0,
+                    size = DpSize(width = size.width / 3, height = size.height),
+                    texts = daysInMonth.map { it.toString() },
                     rowCount = rowCount,
                     style = textStyle,
                     color = textColor
                 ) { snappedIndex ->
-                    println("snapped index $snappedIndex")
-                    val newDay = days.find { it == snappedIndex + 1 }
-                    println("day found $newDay")
-
-                    newDay?.let {
-                        println("current it  $it")
-                        snappedDay = it
-                        selectedDay1 = it
+                    try {
+                        val newDay =
+                            daysInMonth.find { it == snappedIndex + 1 } ?: daysInMonth.last()
+                        snappedDay = newDay
+                        selectedDay1 = newDay
                         onSnappedDate(selectedYear1, selectedMonth1, selectedDay1)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
-
-                    return@WheelTextPicker days.find { it == snappedDay - 1 }
+                    return@WheelPicker daysInMonth.find { it == snappedDay - 1 }
                 }
-            }
 
-            Spacer(modifier = Modifier.weight(1f))
 
-            availableMonths?.let { months ->
-                WheelTextPicker(
-                    modifier = Modifier.weight(1f),
+                WheelPicker(
+                    modifier = Modifier.wrapContentWidth(),
                     startIndex = selectedMonth1,
-                    size = DpSize(
-                        width = size.width / 3,
-                        height = size.height
-                    ),
-                    texts = months,
+                    size = DpSize(width = size.width / 3, height = size.height),
+                    texts = availableMonths,
                     rowCount = rowCount,
                     style = textStyle,
                     color = textColor
                 ) { snappedIndex ->
-                    println("snapped index $snappedIndex")
-                    val newDay = snappedIndex + 1
-                    println("day found $newDay")
+                    try {
+                        val newMonth = snappedIndex + 1
+                        snappedMonth = newMonth
+                        selectedMonth1 = newMonth
 
-                    newDay?.let {
+                        val updatedDays = (1..getDaysInMonth(
+                            selectedMonth1, selectedYear1, calendarState.calendarDateType
+                        )).toList()
 
-                        println("current it  $it")
-                        snappedMonth = it
-                        selectedMonth1 = it
+                        if (selectedDay1 > updatedDays.size) {
+                            selectedDay1 = updatedDays.size
+                        }
+
                         onSnappedDate(selectedYear1, selectedMonth1, selectedDay1)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
-
-                    return@WheelTextPicker snappedMonth - 1
+                    return@WheelPicker snappedMonth - 1
                 }
-            }
 
-            Spacer(modifier = Modifier.weight(1f))
 
-            availableYears?.let { years ->
-                WheelTextPicker(
-                    modifier = Modifier.weight(1f),
-                    startIndex = years.find { it == selectedYear1 } ?: 0,
+                WheelPicker(
+                    modifier = Modifier.wrapContentWidth(),
+                    startIndex = availableYears.indexOf(selectedYear1).takeIf { it >= 0 } ?: 0,
                     size = DpSize(
                         width = size.width / 3,
                         height = size.height
                     ),
-                    texts = years.map { it.toString() },
+                    texts = availableYears.map { it.toString() },
                     rowCount = rowCount,
                     style = textStyle,
                     color = textColor
                 ) { snappedIndex ->
-                    println("snapped index $snappedIndex")
-                    val newYear = years.find { availableYears.toList().indexOf(it) == snappedIndex }
-                    println("day found $newYear")
+                    val newYear = availableYears.toList().getOrNull(snappedIndex)
 
                     newYear?.let {
-                        println("current it  $it")
                         snappedYear = it
                         selectedYear1 = it
-                        onSnappedDate(selectedYear1, 5, selectedDay1)
+
+                        onSnappedDate(selectedYear1, selectedMonth1, selectedDay1)
                     }
 
-                    return@WheelTextPicker years.find { it == snappedYear - 1 }
+                    return@WheelPicker snappedIndex
                 }
             }
-
-            Spacer(modifier = Modifier.weight(1f))
         }
     }
-}
-
-
-@Composable
-fun WheelTextPicker(
-    modifier: Modifier = Modifier,
-    startIndex: Int = 0,
-    size: DpSize = DpSize(128.dp, 128.dp),
-    texts: List<String>,
-    rowCount: Int,
-    style: TextStyle = MaterialTheme.typography.titleMedium,
-    color: Color = LocalContentColor.current,
-    contentAlignment: Alignment = Alignment.Center,
-    onScrollFinished: (snappedIndex: Int) -> Int? = { null },
-) {
-    WheelPicker(
-        modifier = modifier,
-        startIndex = startIndex,
-        count = texts.size,
-        rowCount = rowCount,
-        size = size,
-        onScrollFinished = onScrollFinished,
-        texts = texts,
-        style = style,
-        color = color,
-        contentAlignment = contentAlignment
-    )
 }
 
 
@@ -405,20 +323,19 @@ fun WheelTextPicker(
 internal fun WheelPicker(
     modifier: Modifier = Modifier,
     startIndex: Int = 0,
-    count: Int,
     rowCount: Int,
     size: DpSize = DpSize(128.dp, 128.dp),
-    onScrollFinished: (snappedIndex: Int) -> Int? = { null },
     texts: List<String>,
     style: TextStyle = MaterialTheme.typography.titleMedium,
     color: Color = LocalContentColor.current,
     contentAlignment: Alignment = Alignment.Center,
+    onScrollFinished: (snappedIndex: Int) -> Int? = { null },
 ) {
     val lazyListState = rememberLazyListState(startIndex)
     val snapperLayoutInfo = rememberLazyListSnapperLayoutInfo(lazyListState = lazyListState)
     val isScrollInProgress = lazyListState.isScrollInProgress
 
-    LaunchedEffect(isScrollInProgress, count) {
+    LaunchedEffect(isScrollInProgress) {
         if (!isScrollInProgress) {
             onScrollFinished(calculateSnappedItemIndex(snapperLayoutInfo) ?: startIndex)?.let {
                 lazyListState.scrollToItem(it)
@@ -440,7 +357,7 @@ internal fun WheelPicker(
         LazyColumn(
             modifier = Modifier
                 .height(size.height)
-                .fillMaxWidth()
+                .wrapContentWidth()
                 .fadingEdge(topBottomFade),
             state = lazyListState,
             contentPadding = PaddingValues(vertical = size.height / rowCount * ((rowCount - 1) / 2)),
@@ -448,11 +365,11 @@ internal fun WheelPicker(
                 lazyListState = lazyListState
             )
         ) {
-            items(count) { index ->
+            items(texts.size) { index ->
                 Box(
                     modifier = Modifier
                         .height((size.height) / rowCount)
-                        .fillMaxWidth()
+                        .wrapContentWidth()
                         .alpha(
                             calculateAnimatedAlpha(
                                 lazyListState = lazyListState,
@@ -464,6 +381,7 @@ internal fun WheelPicker(
                     contentAlignment = contentAlignment
                 ) {
                     Text(
+                        modifier = Modifier.basicMarquee(),
                         text = texts[index],
                         style = style,
                         color = if (calculateSnappedItemIndex(snapperLayoutInfo) == index) color else Color.Black,
@@ -475,6 +393,8 @@ internal fun WheelPicker(
         }
     }
 }
+
+
 
 
 @OptIn(ExperimentalSnapperApi::class)
@@ -489,7 +409,7 @@ private fun calculateSnappedItemIndex(snapperLayoutInfo: SnapperLayoutInfo): Int
     return currentItemIndex
 }
 
- fun Modifier.noRippleEffect(
+fun Modifier.noRippleEffect(
     onClick: () -> Unit
 ) = composed {
     this.clickable(
@@ -545,7 +465,6 @@ fun rememberSnapperFlingBehavior(
 
 @Suppress("DEPRECATION")
 @ExperimentalSnapperApi
-@Deprecated("The maximumFlingDistance parameter has been replaced with snapIndex")
 @Composable
 fun rememberSnapperFlingBehavior(
     layoutInfo: SnapperLayoutInfo,
@@ -1160,24 +1079,6 @@ private class LazyListSnapperLayoutItemInfo(
     override val size: Int get() = lazyListItem.size
 }
 
-data class Month(
-    val text: String,
-    val value: Int,
-    val index: Int
-)
-
-data class Day(
-    val text: String,
-    val value: Int,
-    val index: Int
-)
-
-data class Year(
-    val text: String,
-    val value: Int,
-    val index: Int
-)
-
 interface SelectorProperties {
     @Composable
     fun enabled(): State<Boolean>
@@ -1211,17 +1112,12 @@ internal object SnapperLog {
     }
 }
 
-internal sealed class SnappedDate(val snappedLocalDate: LocalDate, val snappedIndex: Int) {
-    data class Month(val localDate: LocalDate, val index: Int) : SnappedDate(localDate, index)
-    data class Day(val localDate: LocalDate, val index: Int) : SnappedDate(localDate, index)
-    data class Year(val localDate: LocalDate, val index: Int) : SnappedDate(localDate, index)
-}
 
 object WheelPickerDefaults {
     @Composable
     fun selectorProperties(
         enabled: Boolean = true,
-        color: Color = MaterialTheme.colorScheme.primary.copy(0.7f),
+        color: Color = MaterialTheme.colorScheme.onSurface.copy(0.7f),
     ): SelectorProperties =
         DefaultSelectorProperties(
             enabled = enabled,
@@ -1249,3 +1145,4 @@ fun calculateAnimatedAlpha(
         0.2f
     }
 }
+

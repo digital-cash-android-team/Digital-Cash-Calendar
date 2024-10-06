@@ -34,8 +34,8 @@ class MainActivity : ComponentActivity() {
                     DgCalendar(
                         calendarState = CalendarState(
                             selectedDate = LocalDate.now(),
-                            calendarDateType = CalendarDateType.GREGORIAN,
-                            calendarViewType = CalendarViewType.Dialog,
+                            calendarDateType = CalendarDateType.HIJRI,
+                            calendarViewType = CalendarViewType.PICKER,
                             disableFutureDates = true,
                         ),
                         textConfig = CalendarDialogTextConfig(

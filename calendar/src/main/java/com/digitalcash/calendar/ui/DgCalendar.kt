@@ -201,7 +201,7 @@ fun DgCalendar(
                 selectedYear = selectedYear,
                 selectedDay = selectedDay,
                 selectedMonth = selectedMonth,
-                language = "ar",
+                language = "en",
                 calendarState = calendarState,
                 onDismiss = onDismissRequest,
                 showBottomSheet = showBottomSheet,
